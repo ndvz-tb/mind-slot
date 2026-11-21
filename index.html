@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindSlot — Розумний простір для приватного психолога</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a7 7 0 0 0-7 7c0 2.5 1.3 4.7 3.2 6l.8 4h6l.8-4c1.9-1.3 3.2-3.5 3.2-6a7 7 0 0 0-7-7Z"/>
+            <path d="M9 22h6"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">MindSlot</div>
+          <div class="brand-sub">Асистент приватного психолога</div>
+        </div>
+      </div>
+
+      <div class="role-switcher" role="tablist" aria-label="Перемикач режиму">
+        <button class="role-btn active" data-role="specialist" id="btnRoleSpecialist">
+          <span>🧑‍⚕️</span> Кабінет психолога
+        </button>
+        <button class="role-btn" data-role="client" id="btnRoleClient">
+          <span>🌿</span> Екран клієнта (Демо)
+        </button>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="btn btn-soft btn-sm" id="btnDemoReminder" title="Показати нагадування та шпаргалку вживу">
+          ⚡ Симулювати нагадування
+        </button>
+        <button class="btn btn-outline btn-sm" id="btnResetDemo" title="Скинути демо-дані">
+          ↺ Скинути
+        </button>
+      </div>
+    </header>
+
+    <!-- ===================== SPECIALIST VIEW ===================== -->
+    <main id="specialistView" class="view active">
+      <div class="specialist-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+          <div class="profile-mini">
+            <div class="avatar avatar-sage">АС</div>
+            <div>
+              <div class="profile-mini-name" id="sidebarSpecName">Анна Савченко</div>
+              <div class="profile-mini-meta">КПТ-терапевт • 50 хв</div>
+            </div>
+          </div>
+
+          <nav class="side-nav">
+            <button class="nav-item active" data-tab="schedule">
+              <span class="nav-icon">📅</span>
+              <span>Розклад і слоти</span>
+              <span class="nav-badge" id="badgePending">1</span>
+            </button>
+            <button class="nav-item" data-tab="clients">
+              <span class="nav-icon">👥</span>
+              <span>База клієнтів</span>
+              <span class="nav-count" id="badgeClients">4</span>
+            </button>
+            <button class="nav-item" data-tab="groups">
+              <span class="nav-icon">🧩</span>
+              <span>Програми груп</span>
+              <span class="pill-new">NEW</span>
+            </button>
+            <button class="nav-item" data-tab="settings">
+              <span class="nav-icon">⚙️</span>
+              <span>Сеттинг і оплата</span>
+            </button>
+          </nav>
+
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">🔗 Посилання для клієнтів</div>
+            <p class="sidebar-card-text">Вставте в шапку Instagram або Telegram — клієнти записуватимуться самі 24/7.</p>
+            <div class="copy-box">
+              <code id="shareUrlText">mindslot.app/anna-s</code>
+              <button class="btn btn-primary btn-xs" id="btnCopyLink">Копіювати</button>
+            </div>
+          </div>
+
+          <div class="sidebar-card waitlist-box">
+            <div class="sidebar-card-title">⏳ Лист очікування</div>
+            <div class="waitlist-count"><strong id="waitlistCount">3</strong> клієнти чекають вільне вікно</div>
+            <p class="sidebar-card-text">При скасуванні слоту бот автоматично пропонує його списку.</p>
+          </div>
+        </aside>
+
+        <!-- Main Specialist Workspace -->
+        <section class="workspace">
+          <!-- TAB 1: SCHEDULE -->
+          <div class="tab-panel active" id="tab-schedule">
+            <div class="page-head">
+              <div>
+                <h1>Розклад і бронювання</h1>
+                <p class="subtitle">Усі вікна, передоплати та перенесення в одному місці без ручних переписок</p>
+              </div>
+              <button class="btn btn-primary" id="btnToggleAddSlot">+ Додати вільний слот</button>
+            </div>
+
+            <!-- KPIs -->
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-label">Підтверджено сесій</div>
+                <div class="kpi-value" id="kpiConfirmed">0</div>
+                <div class="kpi-hint">Оплачено й закріплено</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Очікують оплати</div>
+                <div class="kpi-value kpi-amber" id="kpiPending">0</div>
+                <div class="kpi-hint">Перевірте в 1 клік</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Вільні вікна</div>
+                <div class="kpi-value kpi-sage" id="kpiFree">0</div>
+                <div class="kpi-hint">Доступні для запису</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">Збережено часу</div>
+                <div class="kpi-value">6.5 год</div>
+                <div class="kpi-hint">За цей тиждень без чатів</div>
+              </div>
+            </div>
+
+            <!-- Add Slot Drawer -->
+            <form class="card add-slot-form hidden" id="addSlotForm">
+              <div class="card-title">Нове вільне вікно для запису</div>
+              <div class="form-row">
+                <label class="field">
+                  <span>Дата</span>
+                  <input type="date" id="newSlotDate" required />
+                </label>
+                <label class="field">
+                  <span>Час</span>
+                  <input type="time" id="newSlotTime" value="16:00" required />
+                </label>
+                <label class="field">
+                  <span>Вартість (₴)</span>
+                  <input type="number" id="newSlotPrice" value="1500" min="100" step="50" required />
+                </label>
+                <div class="form-actions-inline">
+                  <button type="submit" class="btn btn-primary">Зберегти слот</button>
+                  <button type="button" class="btn btn-ghost" id="btnCancelAddSlot">Скасувати</button>
+                </div>
+              </div>
+            </form>
+
+            <!-- Waitlist alert banner (hidden until triggered) -->
+            <div class="waitlist-banner hidden" id="waitlistBanner">
+              <div>
+                <strong>⚡ Авто-лист очікування спрацював!</strong>
+                <span id="waitlistBannerText"></span>
+              </div>
+              <button class="btn btn-primary btn-xs" id="btnFillWaitlist">Заповнити з листа очікування</button>
+            </div>
+
+            <!-- Filter pills -->
+            <div class="filter-bar">
+              <button class="chip active" data-filter="all">Усі</button>
+              <button class="chip" data-filter="pending">🟡 Очікують оплати</button>
+              <button class="chip" data-filter="confirmed">🔵 Підтверджені</button>
+              <button class="chip" data-filter="free">🟢 Вільні</button>
+            </div>
+
+            <!-- Slots list -->
+            <div class="slots-list" id="specialistSlotsList"></div>
+          </div>
+
+          <!-- TAB 2: CLIENTS DATABASE -->
+          <div class="tab-panel" id="tab-clients">
+            <div class="page-head">
+              <div>
+                <h1>База клієнтів (Особисті картки)</h1>
+                <p class="subtitle">Біо, запит, міжсесійні чек-іни та ваші приватні нотатки — захищено від очей клієнта</p>
+              </div>
+              <button class="btn btn-primary" id="btnOpenNewClient">+ Додати клієнта</button>
+            </div>
+
+            <!-- New Client inline form -->
+            <form class="card add-slot-form hidden" id="newClientForm">
+              <div class="card-title">Нова картка клієнта</div>
+              <div class="form-row">
+                <label class="field">
+                  <span>Ім'я або псевдонім</span>
+                  <input type="text" id="ncName" placeholder="Напр. Марія К." required />
+                </label>
+                <label class="field">
+                  <span>Telegram</span>
+                  <input type="text" id="ncTg" placeholder="@maria_k" required />
+                </label>
+                <label class="field field-wide">
+                  <span>Біо / Короткий запит</span>
+                  <input type="text" id="ncBio" placeholder="Напр. Вигорання на роботі, складність говорити «ні»" required />
+                </label>
+              </div>
+              <div class="form-actions-right">
+                <button type="button" class="btn btn-ghost" id="btnCancelNewClient">Скасувати</button>
+                <button type="submit" class="btn btn-primary">Створити картку</button>
+              </div>
+            </form>
+
+            <div class="clients-split">
+              <!-- Client list -->
+              <div class="card clients-list-panel">
+                <input type="search" class="search-input" id="clientSearch" placeholder="🔍 Пошук за ім'ям або запитом..." />
+                <div class="client-items" id="clientsList"></div>
+              </div>
+
+              <!-- Client detail card -->
+              <div class="card client-detail-panel" id="clientDetailPanel">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: GROUP PROGRAMS BUILDER -->
+          <div class="tab-panel" id="tab-groups">
+            <div class="page-head">
+              <div>
+                <h1>Конструктор програм груп</h1>
+                <p class="subtitle">Збирайте структуру групової терапії з таймінгом, вправами та планом Б за 30 секунд замість 20 годин</p>
+              </div>
+            </div>
+
+            <div class="groups-grid">
+              <!-- Generator Form -->
+              <form class="card group-builder-form" id="groupBuilderForm">
+                <div class="card-title">⚙️ Параметри нової групи</div>
+
+                <label class="field">
+                  <span>Тема терапевтичної групи</span>
+                  <select id="grpTopic">
+                    <option value="burnout">Антивигорання та повернення ресурсу</option>
+                    <option value="boundaries">Особисті кордони та вміння казати «ні»</option>
+                    <option value="anxiety">Опора під час тривоги та невизначеності</option>
+                    <option value="selfworth">Здорова самооцінка і внутрішній критик</option>
+                  </select>
+                </label>
+
+                <div class="form-row-2">
+                  <label class="field">
+                    <span>Психотерапевтичний підхід</span>
+                    <select id="grpApproach">
+                      <option value="КПТ (Когнітивно-поведінковий)">КПТ</option>
+                      <option value="Гештальт-підхід">Гештальт</option>
+                      <option value="Арт-терапія та ресурсні практики">Арт-терапія</option>
+                      <option value="Інтегративний підхід">Інтегративний</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Кількість зустрічей</span>
+                    <select id="grpSessions">
+                      <option value="4">4 зустрічі</option>
+                      <option value="6" selected>6 зустрічей</option>
+                      <option value="8">8 зустрічей</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="form-row-2">
+                  <label class="field">
+                    <span>Формат</span>
+                    <select id="grpFormat">
+                      <option value="Онлайн (Zoom, 90 хв)">Онлайн (Zoom, 90 хв)</option>
+                      <option value="Офлайн (Кабінет, 120 хв)">Офлайн (Кабінет, 120 хв)</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Учасників у групі</span>
+                    <input type="number" id="grpSize" value="8" min="4" max="20" />
+                  </label>
+                </div>
+
+                <label class="field">
+                  <span>Особливі запити учасників (опціонально)</span>
+                  <textarea id="grpCustomNeed" rows="2" placeholder="Напр. багато IT-спеціалістів, інтровертна група, важко розкриватись на старті..."></textarea>
+                </label>
+
+                <button type="submit" class="btn btn-primary btn-full">✨ Згенерувати покрокову програму</button>
+              </form>
+
+              <!-- Generated Program Output -->
+              <div class="card group-output-panel" id="groupOutputPanel">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: SETTINGS -->
+          <div class="tab-panel" id="tab-settings">
+            <div class="page-head">
+              <div>
+                <h1>Налаштування сеттингу й оплати</h1>
+                <p class="subtitle">Бот сам дотримується ваших правил — вам не потрібно пояснювати їх кожного разу вручну</p>
+              </div>
+            </div>
+
+            <form class="card settings-form" id="settingsForm">
+              <div class="form-row-2">
+                <label class="field">
+                  <span>Ім'я спеціаліста</span>
+                  <input type="text" id="setSpecName" />
+                </label>
+                <label class="field">
+                  <span>Спеціалізація</span>
+                  <input type="text" id="setSpecTitle" />
+                </label>
+              </div>
+
+              <div class="form-row-2">
+                <label class="field">
+                  <span>Стандартна вартість сесії (₴)</span>
+                  <input type="number" id="setPrice" />
+                </label>
+                <label class="field">
+                  <span>Посилання на відеозустріч (Zoom / Meet)</span>
+                  <input type="url" id="setMeetUrl" />
+                </label>
+              </div>
+
+              <label class="field">
+                <span>Реквізити для оплати (Monobank / IBAN ФОП)</span>
+                <input type="text" id="setPaymentInfo" />
+              </label>
+
+              <label class="toggle-row">
+                <input type="checkbox" id="setRule24h" checked />
+                <div>
+                  <strong>Увімкнути правило скасування за 24 години</strong>
+                  <p>Клієнт може вільно перенести слот більше ніж за добу. Менш ніж за 24 год — система попереджає про збереження передоплати.</p>
+                </div>
+              </label>
+
+              <div class="form-actions-right">
+                <button type="submit" class="btn btn-primary">Зберегти налаштування</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- ===================== CLIENT VIEW ===================== -->
+    <main id="clientView" class="view">
+      <div class="client-container">
+        <!-- Specialist public header -->
+        <div class="card client-hero">
+          <div class="client-hero-left">
+            <div class="avatar avatar-lg avatar-sage">АС</div>
+            <div>
+              <div class="badge-soft">✓ Перевірений спеціаліст • Онлайн</div>
+              <h1 id="clientSpecName">Анна Савченко</h1>
+              <p id="clientSpecTitle">Клінічний психолог, КПТ-терапевт • Індивідуальні сесії (50 хв)</p>
+            </div>
+          </div>
+          <div class="client-price-box">
+            <div class="price-main"><span id="clientSpecPrice">1 500</span> ₴</div>
+            <div class="price-sub">за сесію 50 хв</div>
+          </div>
+        </div>
+
+        <!-- Client mode sub-tabs -->
+        <div class="client-tabs">
+          <button class="ctab active" data-ctab="book">📅 Записатися на сесію</button>
+          <button class="ctab" data-ctab="mybookings">🔄 Мої записи / Перенесення</button>
+          <button class="ctab" data-ctab="checkin">📝 Чек-ін між сесіями</button>
+        </div>
+
+        <!-- CLIENT TAB 1: BOOKING -->
+        <div class="ctab-panel active" id="ctab-book">
+          <div class="booking-grid">
+            <div class="card">
+              <div class="step-label">Крок 1</div>
+              <h2>Оберіть зручне вільне вікно</h2>
+              <p class="muted">Слот блокується автоматично, без очікування відповіді в чаті.</p>
+              <div class="client-slots-grid" id="clientFreeSlots"></div>
+
+              <div class="waitlist-client-box">
+                <span>Немає зручного часу?</span>
+                <button class="btn btn-outline btn-xs" id="btnJoinWaitlist">⏳ Стати в лист очікування</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="step-label">Крок 2</div>
+              <h2>Ваше коротке Біо та підтвердження</h2>
+              <form id="clientBookingForm">
+                <div class="selected-slot-pill" id="selectedSlotDisplay">
+                  ← Спочатку оберіть вільний слот ліворуч
+                </div>
+
+                <label class="field">
+                  <span>Як до вас звертатися? (можна псевдонім)</span>
+                  <input type="text" id="cbName" placeholder="Напр. Ірина" required />
+                </label>
+
+                <label class="field">
+                  <span>Ваш Telegram для нагадувань</span>
+                  <input type="text" id="cbTg" placeholder="@iryna_dev" required />
+                </label>
+
+                <label class="field">
+                  <span>Коротко ваш запит (бачить лише психолог)</span>
+                  <textarea id="cbBio" rows="3" placeholder="Напр. Постійна тривога, складно розслабитись після роботи..." required></textarea>
+                </label>
+
+                <div class="ethical-box" id="clientRuleBox">
+                  <strong>🛡️ Правило терапевтичного сеттингу (24 год)</strong>
+                  <p>Ви можете безкоштовно перенести або скасувати сесію не пізніше ніж за 24 години до початку в 1 клік. При скасуванні менш ніж за добу оплата зберігається за зарезервований час.</p>
+                </div>
+
+                <div class="payment-box">
+                  <div class="payment-label">💳 Оплата для закріплення броні:</div>
+                  <div class="payment-creds" id="clientPaymentInfo">Monobank • 5375 4112 0000 1234 (ФОП Савченко А.)</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full" id="btnConfirmBooking">
+                  ✅ Я оплатив(ла) — забронювати слот
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- CLIENT TAB 2: MY BOOKINGS & 24H RESCHEDULE -->
+        <div class="ctab-panel" id="ctab-mybookings">
+          <div class="card">
+            <div class="page-head-sm">
+              <div>
+                <h2>Ваші заплановані сесії</h2>
+                <p class="muted">Переносьте сесії самостійно без незручних переписок. Правило 24 годин перевіряється автоматично.</p>
+              </div>
+            </div>
+            <div class="my-bookings-list" id="clientMyBookingsList"></div>
+          </div>
+        </div>
+
+        <!-- CLIENT TAB 3: BETWEEN-SESSION CHECK-IN -->
+        <div class="ctab-panel" id="ctab-checkin">
+          <div class="card checkin-card">
+            <h2>Щоденник між сесіями (167 годин)</h2>
+            <p class="muted">Зафіксуйте свій стан за 15 секунд — запис одразу потрапить у вашу особисту картку психолога, щоб не забути важливе до зустрічі.</p>
+
+            <form id="clientCheckinForm">
+              <label class="field">
+                <span>Оберіть ваш профіль (для демо)</span>
+                <select id="checkinClientSelect"></select>
+              </label>
+
+              <label class="field">
+                <span>Як ви почуваєтесь зараз? <strong id="moodValueLabel">7 / 10</strong></span>
+                <input type="range" id="checkinMood" min="1" max="10" value="7" class="mood-slider" />
+                <div class="mood-scale">
+                  <span>1 — Дуже важко</span>
+                  <span>5 — Нейтрально</span>
+                  <span>10 — Спокій і ресурс</span>
+                </div>
+              </label>
+
+              <label class="field">
+                <span>Що сталося або що викликало емоцію?</span>
+                <textarea id="checkinNote" rows="3" placeholder="Напр. Сьогодні вперше спокійно відмовила колезі в зайвому завданні, але потім відчула легку провину..." required></textarea>
+              </label>
+
+              <button type="submit" class="btn btn-primary">💾 Зберегти у мій щоденник</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL FOR RESCHEDULING / 24H WARNING -->
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTitle">Перенесення сесії</h3>
+        <button class="modal-close" id="btnModalClose">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- TOAST / LIVE TELEGRAM NOTIFICATIONS STACK -->
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
