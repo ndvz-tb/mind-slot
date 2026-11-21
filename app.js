@@ -1,6 +1,6 @@
 // MindSlot — Interactive Hackathon MVP (LocalStorage-backed, zero dependencies)
 
-const STORAGE_KEY = 'mindslot_mvp_state_v1';
+const STORAGE_KEY = 'mindslot_mvp_state_v2';
 
 function offsetDateStr(daysFromNow) {
   const d = new Date();
@@ -29,6 +29,12 @@ function getDefaultState() {
         tg: '@olena_m',
         bio: 'Емоційне вигорання після підвищення, постійна провина при відпочинку та складність делегувати.',
         sessionsCount: 7,
+        credit: 0,
+        unread: 1,
+        messages: [
+          { sender: 'specialist', text: 'Вітаю, Олено! Нагадую, що сьогодні о 18:00 наша сесія. Посилання вже у вашому кабінеті.', time: '14:10' },
+          { sender: 'client', text: 'Добрий день! У нас щойно вимкнули світло і зник інтернет — боюсь, не встигну на 18:00. Це форс-мажор, чи можна не списувати оплату?', time: '15:42' },
+        ],
         checkins: [
           { date: 'Вчора, 21:10', mood: 7, note: 'Вдалося закрити ноутбук о 19:00 без відчуття провини — прогрес!' },
           { date: '3 дні тому', mood: 4, note: 'Стресовий мітинг із керівником, знову тригернуло бажання все контролювати.' },
@@ -44,6 +50,11 @@ function getDefaultState() {
         tg: '@andriy_k',
         bio: 'Тривожність перед публічними виступами та перевантаження новинами.',
         sessionsCount: 3,
+        credit: 0,
+        unread: 0,
+        messages: [
+          { sender: 'client', text: 'Привіт! Скинув оплату за завтрашню сесію о 11:00.', time: '12:20' },
+        ],
         checkins: [
           { date: 'Сьогодні, 09:30', mood: 6, note: 'Зробив дихальну практику перед дзвінком — пульс швидко заспокоївся.' },
         ],
@@ -57,6 +68,11 @@ function getDefaultState() {
         tg: '@sofia_v',
         bio: 'Особисті кордони у стосунках із батьками, складно говорити «ні».',
         sessionsCount: 5,
+        credit: 0,
+        unread: 0,
+        messages: [
+          { sender: 'specialist', text: 'Софіє, дякую за вчорашній чек-ін! Обов’язково розберемо цей успіх на зустрічі.', time: 'Вчора' },
+        ],
         checkins: [
           { date: '2 дні тому', mood: 8, note: 'Спокійно сказала мамі, що приїду в неділю, а не в суботу. Без сварки!' },
         ],
@@ -70,6 +86,9 @@ function getDefaultState() {
         tg: '@dmytro_t',
         bio: 'Перший запит: втрата мотивації, прокрастинація, складно планувати майбутнє.',
         sessionsCount: 1,
+        credit: 0,
+        unread: 0,
+        messages: [],
         checkins: [],
         notes: [
           { date: 'Знайомство', text: 'Первинна діагностика, запит чіткий. Узгодили регулярність 1 раз/тиждень.' },
@@ -77,13 +96,13 @@ function getDefaultState() {
       },
     ],
     slots: [
-      { id: 's1', date: offsetDateStr(0), time: '18:00', price: 1500, status: 'confirmed', clientId: 'c1', hoursLeft: 4 },
-      { id: 's2', date: offsetDateStr(1), time: '11:00', price: 1500, status: 'pending', clientId: 'c2', hoursLeft: 19 },
-      { id: 's3', date: offsetDateStr(1), time: '14:00', price: 1500, status: 'free', clientId: null, hoursLeft: 22 },
-      { id: 's4', date: offsetDateStr(2), time: '10:00', price: 1500, status: 'confirmed', clientId: 'c3', hoursLeft: 42 },
-      { id: 's5', date: offsetDateStr(2), time: '15:00', price: 1500, status: 'free', clientId: null, hoursLeft: 47 },
-      { id: 's6', date: offsetDateStr(2), time: '17:00', price: 1500, status: 'free', clientId: null, hoursLeft: 49 },
-      { id: 's7', date: offsetDateStr(3), time: '12:00', price: 1500, status: 'free', clientId: null, hoursLeft: 68 },
+      { id: 's1', date: offsetDateStr(0), time: '18:00', price: 1500, status: 'confirmed', clientId: 'c1', hoursLeft: 4, forceMajeureReason: 'Вимкнули світло та інтернет' },
+      { id: 's2', date: offsetDateStr(1), time: '11:00', price: 1500, status: 'pending', clientId: 'c2', hoursLeft: 19, forceMajeureReason: null },
+      { id: 's3', date: offsetDateStr(1), time: '14:00', price: 1500, status: 'free', clientId: null, hoursLeft: 22, forceMajeureReason: null },
+      { id: 's4', date: offsetDateStr(2), time: '10:00', price: 1500, status: 'confirmed', clientId: 'c3', hoursLeft: 42, forceMajeureReason: null },
+      { id: 's5', date: offsetDateStr(2), time: '15:00', price: 1500, status: 'free', clientId: null, hoursLeft: 47, forceMajeureReason: null },
+      { id: 's6', date: offsetDateStr(2), time: '17:00', price: 1500, status: 'free', clientId: null, hoursLeft: 49, forceMajeureReason: null },
+      { id: 's7', date: offsetDateStr(3), time: '12:00', price: 1500, status: 'free', clientId: null, hoursLeft: 68, forceMajeureReason: null },
     ],
     groupProgram: null,
   };
@@ -91,9 +110,15 @@ function getDefaultState() {
 
 let state = loadState();
 let selectedClientId = state.clients[0]?.id || null;
+let selectedChatClientId = state.clients[0]?.id || null;
 let currentSlotFilter = 'all';
 let selectedBookingSlotId = null;
 let lastFreedSlotId = null;
+
+function nowTimeStr() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
 
 function loadState() {
   try {
@@ -164,11 +189,14 @@ function renderAll() {
   renderSettingsUI();
   renderKPIs();
   renderSpecialistSlots();
+  renderSpecChatThreads();
+  renderSpecChatWindow();
   renderClientsList();
   renderClientDetail();
   renderClientBookingView();
   renderClientMyBookings();
   renderCheckinClients();
+  renderClientChatUI();
   if (!state.groupProgram) {
     state.groupProgram = buildGroupProgram('burnout', 'КПТ (Когнітивно-поведінковий)', 6, 'Онлайн (Zoom, 90 хв)', 8, '');
   }
@@ -205,6 +233,13 @@ function renderKPIs() {
   document.getElementById('badgePending').textContent = pending;
   document.getElementById('badgePending').classList.toggle('hidden', pending === 0);
   document.getElementById('badgeClients').textContent = state.clients.length;
+
+  const totalUnread = state.clients.reduce((sum, c) => sum + (c.unread || 0), 0);
+  const badgeUnread = document.getElementById('badgeUnread');
+  if (badgeUnread) {
+    badgeUnread.textContent = totalUnread;
+    badgeUnread.classList.toggle('hidden', totalUnread === 0);
+  }
 }
 
 // ==================== SPECIALIST SLOTS ====================
@@ -232,20 +267,28 @@ function renderSpecialistSlots() {
       if (slot.status === 'pending') {
         actions = `
           <button class="btn btn-primary btn-xs" onclick="confirmPayment('${slot.id}')">✅ Підтвердити оплату</button>
-          <button class="btn btn-outline btn-xs" onclick="openClientCard('${slot.clientId}')">👤 Картка</button>
+          <button class="btn btn-purple-soft btn-xs" onclick="waiveForceMajeure('${slot.id}')">🕊️ Форс-мажор (0 ₴)</button>
+          <button class="btn btn-outline btn-xs" onclick="openChatWithClient('${slot.clientId}')">💬 Чат</button>
           <button class="btn btn-danger-soft btn-xs" onclick="freeSlot('${slot.id}')">Звільнити</button>
         `;
       } else if (slot.status === 'confirmed') {
         actions = `
+          ${slot.forceMajeureReason
+            ? `<button class="btn btn-purple-soft btn-xs" onclick="waiveForceMajeure('${slot.id}')">🕊️ Форс-мажор: не стягувати оплату</button>`
+            : `<button class="btn btn-purple-soft btn-xs" onclick="waiveForceMajeure('${slot.id}')" title="Звільнити без штрафу і зберегти передоплату">🕊️ Форс-мажор (0 ₴)</button>`}
           <a class="btn btn-soft btn-xs" href="${state.settings.meetUrl}" target="_blank" rel="noopener">🎥 Zoom</a>
-          <button class="btn btn-outline btn-xs" onclick="openClientCard('${slot.clientId}')">👤 Картка і нотатки</button>
-          <button class="btn btn-danger-soft btn-xs" onclick="freeSlot('${slot.id}')">Скасувати</button>
+          <button class="btn btn-outline btn-xs" onclick="openChatWithClient('${slot.clientId}')">💬 Чат</button>
+          <button class="btn btn-outline btn-xs" onclick="openClientCard('${slot.clientId}')">👤 Картка</button>
         `;
       } else {
         actions = `
           <button class="btn btn-ghost btn-xs" onclick="deleteSlot('${slot.id}')">🗑 Видалити</button>
         `;
       }
+
+      const fmBadge = slot.forceMajeureReason
+        ? `<span class="status-badge status-fm">🕊️ Форс-мажор: ${slot.forceMajeureReason}</span>`
+        : '';
 
       return `
         <div class="slot-row">
@@ -258,6 +301,7 @@ function renderSpecialistSlots() {
               <div class="slot-info-title">
                 ${client ? `${client.name} (${client.tg})` : 'Вільне вікно для запису'}
                 ${badgeMap[slot.status]}
+                ${fmBadge}
               </div>
               <div class="slot-info-sub">
                 ${client ? `Запит: ${client.bio.slice(0, 72)}${client.bio.length > 72 ? '…' : ''}` : `50 хв • ${slot.price} ₴ • Доступно на сторінці запису`}
@@ -291,6 +335,7 @@ window.freeSlot = function (slotId) {
   if (!slot) return;
   slot.status = 'free';
   slot.clientId = null;
+  slot.forceMajeureReason = null;
   lastFreedSlotId = slot.id;
   saveState();
   renderAll();
@@ -301,6 +346,188 @@ window.freeSlot = function (slotId) {
   banner.classList.remove('hidden');
   showToast('⚡ Слот звільнено', `Бот розіслав сповіщення ${state.waitlistCount} людям із листа очікування.`, true);
 };
+
+window.waiveForceMajeure = function (slotId) {
+  const slot = state.slots.find((s) => s.id === slotId);
+  if (!slot) return;
+  const client = getClientById(slot.clientId);
+  const wasPaid = slot.status === 'confirmed';
+  const slotLabel = `${formatDateUA(slot.date)} о ${slot.time}`;
+
+  if (client) {
+    if (!client.messages) client.messages = [];
+    if (wasPaid) {
+      client.credit = (client.credit || 0) + slot.price;
+    }
+    client.messages.push({
+      sender: 'system',
+      text: wasPaid
+        ? `🕊️ Психолог підтвердив форс-мажор: оплату за сесію ${slotLabel} НЕ стягнуто! Передоплата ${slot.price} ₴ збережена на вашому балансі для наступної зустрічі.`
+        : `🕊️ Психолог підтвердив форс-мажор: бронь ${slotLabel} скасовано без стягнення оплати (0 ₴).`,
+      time: nowTimeStr(),
+    });
+  }
+
+  slot.status = 'free';
+  slot.clientId = null;
+  slot.forceMajeureReason = null;
+  lastFreedSlotId = slot.id;
+  saveState();
+  renderAll();
+
+  const banner = document.getElementById('waitlistBanner');
+  document.getElementById('waitlistBannerText').textContent =
+    ` Слот ${slotLabel} звільнено по форс-мажору → запропоновано ${state.waitlistCount} клієнтам із листа очікування!`;
+  banner.classList.remove('hidden');
+
+  showToast(
+    '🕊️ Форс-мажор підтверджено — оплату НЕ стягнуто',
+    wasPaid
+      ? `Для ${client?.name || 'клієнта'} збережено ${slot.price} ₴ на балансі для наступної сесії. Сповіщення надіслано в чат.`
+      : `Бронь ${client?.name || ''} скасовано без штрафу (0 ₴). Сповіщення надіслано в чат.`,
+    true
+  );
+};
+
+window.openChatWithClient = function (clientId) {
+  if (!clientId) return;
+  selectedChatClientId = clientId;
+  const c = getClientById(clientId);
+  if (c) c.unread = 0;
+  saveState();
+  switchSpecialistTab('chat');
+  renderAll();
+};
+
+// ==================== MINI MESSENGER (SPECIALIST + CLIENT) ====================
+function renderSpecChatThreads() {
+  const list = document.getElementById('specChatThreads');
+  if (!list) return;
+
+  list.innerHTML = state.clients
+    .map((c) => {
+      const msgs = c.messages || [];
+      const last = msgs[msgs.length - 1];
+      const preview = last ? last.text.slice(0, 34) + (last.text.length > 34 ? '…' : '') : 'Немає повідомлень';
+      const initials = c.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+      return `
+        <button class="client-item ${c.id === selectedChatClientId ? 'active' : ''}" onclick="selectSpecChat('${c.id}')">
+          <div class="avatar avatar-sage">${initials}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
+              <span class="client-item-name">${c.name}</span>
+              ${c.unread ? `<span class="nav-badge">${c.unread}</span>` : ''}
+            </div>
+            <div class="client-item-meta" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${preview}</div>
+          </div>
+        </button>
+      `;
+    })
+    .join('');
+}
+
+window.selectSpecChat = function (id) {
+  selectedChatClientId = id;
+  const c = getClientById(id);
+  if (c) c.unread = 0;
+  saveState();
+  renderAll();
+};
+
+function renderSpecChatWindow() {
+  const win = document.getElementById('specChatWindow');
+  if (!win) return;
+  const c = getClientById(selectedChatClientId) || state.clients[0];
+  if (!c) {
+    win.innerHTML = `<div class="muted" style="padding:20px;">Оберіть діалог ліворуч</div>`;
+    return;
+  }
+
+  const msgs = c.messages || [];
+  const activeSlot = state.slots.find((s) => s.clientId === c.id && s.status !== 'free');
+
+  const fmBar = activeSlot
+    ? `
+      <div class="fm-alert-bar">
+        <div>
+          <strong>📅 Сесія ${formatDateUA(activeSlot.date)} о ${activeSlot.time}</strong>
+          ${activeSlot.forceMajeureReason ? ` • Причина форс-мажору: <em>${activeSlot.forceMajeureReason}</em>` : ' • Якщо у клієнта форс-мажор — можна не стягувати оплату'}
+        </div>
+        <button class="btn btn-primary btn-xs" onclick="waiveForceMajeure('${activeSlot.id}')">
+          🕊️ Не стягувати оплату (форс-мажор)
+        </button>
+      </div>`
+    : '';
+
+  const messagesHtml = msgs.length
+    ? msgs
+        .map((m) => {
+          const cls = m.sender === 'system' ? 'msg-system' : m.sender === 'specialist' ? 'msg-out' : 'msg-in';
+          return `<div class="msg-bubble ${cls}">${m.text}<span class="msg-meta">${m.time}</span></div>`;
+        })
+        .join('')
+    : `<div class="muted" style="text-align:center;margin:auto;">Почніть діалог із ${c.name}</div>`;
+
+  win.innerHTML = `
+    <div class="chat-window-head">
+      <div>
+        <div style="font-weight:700;font-size:15px;">${c.name} <span class="muted" style="font-weight:400;">(${c.tg})</span></div>
+        <div class="muted" style="font-size:12px;">
+          ${c.credit ? `💰 Збережена оплата (форс-мажор): ${c.credit} ₴ • ` : ''}${c.bio.slice(0, 68)}${c.bio.length > 68 ? '…' : ''}
+        </div>
+      </div>
+      <button class="btn btn-outline btn-xs" onclick="openClientCard('${c.id}')">👤 Відкрити картку</button>
+    </div>
+    ${fmBar}
+    <div class="chat-messages" id="specChatMessagesBox">${messagesHtml}</div>
+    <form class="chat-input-form" onsubmit="sendSpecChatMessage(event, '${c.id}')">
+      <input type="text" id="specChatInput" placeholder="Відповісти клієнту ${c.name}..." required />
+      <button type="submit" class="btn btn-primary">Надіслати</button>
+    </form>
+  `;
+
+  const box = document.getElementById('specChatMessagesBox');
+  if (box) box.scrollTop = box.scrollHeight;
+}
+
+window.sendSpecChatMessage = function (e, clientId) {
+  e.preventDefault();
+  const input = document.getElementById('specChatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const c = getClientById(clientId);
+  if (!c) return;
+  if (!c.messages) c.messages = [];
+  c.messages.push({ sender: 'specialist', text, time: nowTimeStr() });
+  saveState();
+  renderAll();
+  showToast('💬 Повідомлення надіслано', `Клієнт ${c.name} побачить його в «Чат із психологом».`, true);
+};
+
+function renderClientChatUI() {
+  const sel = document.getElementById('clientChatSelect');
+  const box = document.getElementById('clientChatMessages');
+  if (!sel || !box) return;
+
+  const currentVal = sel.value || selectedChatClientId || state.clients[0]?.id;
+  sel.innerHTML = state.clients.map((c) => `<option value="${c.id}">${c.name} (${c.tg})</option>`).join('');
+  if (state.clients.some((c) => c.id === currentVal)) sel.value = currentVal;
+
+  const c = getClientById(sel.value) || state.clients[0];
+  if (!c) return;
+  const msgs = c.messages || [];
+
+  box.innerHTML = msgs.length
+    ? msgs
+        .map((m) => {
+          const cls = m.sender === 'system' ? 'msg-system' : m.sender === 'client' ? 'msg-out' : 'msg-in';
+          return `<div class="msg-bubble ${cls}">${m.text}<span class="msg-meta">${m.time}</span></div>`;
+        })
+        .join('')
+    : `<div class="muted" style="text-align:center;margin:auto;">Напишіть психологу щодо запису або форс-мажору</div>`;
+
+  box.scrollTop = box.scrollHeight;
+}
 
 window.deleteSlot = function (slotId) {
   state.slots = state.slots.filter((s) => s.id !== slotId);
@@ -399,7 +626,10 @@ function renderClientDetail() {
     <div class="client-detail-head">
       <div>
         <h2 style="font-size:20px;">${c.name}</h2>
-        <div class="muted">${c.tg} • Проведено сесій: <strong>${c.sessionsCount}</strong></div>
+        <div class="muted">
+          ${c.tg} • Проведено сесій: <strong>${c.sessionsCount}</strong>
+          ${c.credit ? ` • <strong style="color:var(--sage)">💰 Баланс (перенесена оплата): ${c.credit} ₴</strong>` : ''}
+        </div>
       </div>
       <div>
         ${
@@ -728,15 +958,22 @@ window.initiateReschedule = function (slotId) {
 
   if (state.settings.rule24h && hrs < 24) {
     openModal(
-      '🛡️ Діє правило 24 годин',
+      '🛡️ Діє правило 24 годин (або форс-мажор)',
       `
       <p style="margin-bottom:12px;">До вашої сесії (<strong>${formatDateUA(slot.date)} о ${slot.time}</strong>) залишилось менше 24 годин (~${Math.max(1, hrs)} год).</p>
       <div class="ethical-box">
-        Згідно з правилами терапевтичного сеттингу, час уже закріплено за вами, тому автоматичне безкоштовне перенесення недоступне. Оплата за цей слот зберігається.
+        За стандартним правилом безкоштовне авто-перенесення закрите. Але якщо у вас <strong>форс-мажор</strong> (відключення світла, тривога, хвороба) — надішліть запит психологу, щоб <strong>не стягувати оплату</strong> і зберегти її на наступну сесію.
       </div>
-      <div class="form-actions-right">
-        <button class="btn btn-primary" onclick="closeModal()">Залишити запис</button>
-      </div>
+      <form onsubmit="submitForceMajeureRequest(event, '${slot.id}')">
+        <label class="field">
+          <span>Коротко вкажіть причину форс-мажору</span>
+          <input type="text" id="fmReasonInput" placeholder="Напр. вимкнули світло / повітряна тривога / захворіла дитина" required />
+        </label>
+        <div class="form-actions-right">
+          <button type="button" class="btn btn-ghost" onclick="closeModal()">Залишити запис</button>
+          <button type="submit" class="btn btn-primary">🕊️ Запит на форс-мажор (0 ₴)</button>
+        </div>
+      </form>
       `
     );
     return;
@@ -799,14 +1036,48 @@ window.initiateCancel = function (slotId) {
     <p style="margin-bottom:12px;">Сесія: <strong>${formatDateUA(slot.date)} о ${slot.time}</strong>.</p>
     ${
       under24
-        ? `<div class="ethical-box"><strong>Увага:</strong> до сесії менше 24 годин. Згідно з правилами сеттингу, передоплата (${slot.price} ₴) не повертається. Ви впевнені, що хочете скасувати?</div>`
+        ? `<div class="ethical-box"><strong>Увага:</strong> до сесії менше 24 годин. За стандартним правилом оплата (${slot.price} ₴) не повертається. Якщо стався <strong>форс-мажор</strong> — надішліть запит психологу нижче, щоб не стягувати оплату!</div>
+           <form onsubmit="submitForceMajeureRequest(event, '${slot.id}')" style="margin-bottom:12px;">
+             <label class="field">
+               <span>Причина форс-мажору (щоб не стягувати оплату)</span>
+               <input type="text" id="fmReasonInput" placeholder="Напр. форс-мажор зі світлом / невідкладна ситуація" required />
+             </label>
+             <button type="submit" class="btn btn-purple-soft btn-full">🕊️ Повідомити про форс-мажор (запросити 0 ₴)</button>
+           </form>`
         : `<p class="muted" style="margin-bottom:12px;">До сесії більше 24 годин — скасування безкоштовне, а вікно автоматично передасться в лист очікування.</p>`
     }
     <div class="form-actions-right">
       <button class="btn btn-ghost" onclick="closeModal()">Назад</button>
-      <button class="btn btn-danger-soft" onclick="confirmClientCancel('${slot.id}')">Підтвердити скасування</button>
+      <button class="btn btn-danger-soft" onclick="confirmClientCancel('${slot.id}')">Скасувати ${under24 ? '(зі збереженням оплати)' : 'безкоштовно'}</button>
     </div>
     `
+  );
+};
+
+window.submitForceMajeureRequest = function (e, slotId) {
+  e.preventDefault();
+  const reason = document.getElementById('fmReasonInput')?.value.trim() || 'Форс-мажор';
+  const slot = state.slots.find((s) => s.id === slotId);
+  if (!slot) return;
+  slot.forceMajeureReason = reason;
+  const client = getClientById(slot.clientId);
+  if (client) {
+    if (!client.messages) client.messages = [];
+    client.messages.push({
+      sender: 'client',
+      text: `🕊️ Форс-мажор щодо сесії ${formatDateUA(slot.date)} о ${slot.time}: «${reason}». Прошу не стягувати оплату / перенести її на наступну зустріч.`,
+      time: nowTimeStr(),
+    });
+    client.unread = (client.unread || 0) + 1;
+    selectedChatClientId = client.id;
+  }
+  saveState();
+  closeModal();
+  renderAll();
+  showToast(
+    '🕊️ Запит про форс-мажор надіслано!',
+    'Психолог побачить його в Міні-месенджері та Розкладі і зможе в 1 клік не стягувати оплату.',
+    true
   );
 };
 
@@ -914,6 +1185,9 @@ document.addEventListener('DOMContentLoaded', () => {
       tg: document.getElementById('ncTg').value.trim(),
       bio: document.getElementById('ncBio').value.trim(),
       sessionsCount: 0,
+      credit: 0,
+      unread: 0,
+      messages: [],
       checkins: [],
       notes: [],
     };
@@ -982,7 +1256,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let client = state.clients.find((c) => c.tg.toLowerCase() === tg.toLowerCase());
     if (!client) {
-      client = { id: 'c' + Date.now(), name, tg, bio, sessionsCount: 0, checkins: [], notes: [] };
+      client = { id: 'c' + Date.now(), name, tg, bio, sessionsCount: 0, credit: 0, unread: 0, messages: [], checkins: [], notes: [] };
       state.clients.unshift(client);
     } else {
       client.bio = bio;
@@ -1048,6 +1322,41 @@ document.addEventListener('DOMContentLoaded', () => {
         true
       );
     }, 900);
+  });
+
+  // Client mini-messenger events
+  document.getElementById('clientChatSelect').addEventListener('change', () => {
+    selectedChatClientId = document.getElementById('clientChatSelect').value;
+    renderClientChatUI();
+  });
+
+  document.getElementById('btnQuickForceMajeure').addEventListener('click', () => {
+    document.getElementById('clientChatInput').value =
+      'У мене стався форс-мажор (вимкнули світло / невідкладна ситуація), чи можемо перенести сесію без стягнення оплати?';
+    document.getElementById('clientChatInput').focus();
+  });
+
+  document.getElementById('btnQuickLate').addEventListener('click', () => {
+    document.getElementById('clientChatInput').value = 'Вибачте, трохи затримуюсь — підключусь через 5 хвилин!';
+    document.getElementById('clientChatInput').focus();
+  });
+
+  document.getElementById('clientChatForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const clientId = document.getElementById('clientChatSelect').value;
+    const input = document.getElementById('clientChatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    const c = getClientById(clientId);
+    if (!c) return;
+    if (!c.messages) c.messages = [];
+    c.messages.push({ sender: 'client', text, time: nowTimeStr() });
+    c.unread = (c.unread || 0) + 1;
+    selectedChatClientId = c.id;
+    input.value = '';
+    saveState();
+    renderAll();
+    showToast('💬 Надіслано психологу', `Повідомлення від ${c.name} уже в «Міні-месенджері» психолога!`, true);
   });
 
   // Reset demo

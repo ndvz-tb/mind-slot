@@ -64,6 +64,11 @@
               <span>Розклад і слоти</span>
               <span class="nav-badge" id="badgePending">1</span>
             </button>
+            <button class="nav-item" data-tab="chat">
+              <span class="nav-icon">💬</span>
+              <span>Міні-месенджер</span>
+              <span class="nav-badge" id="badgeUnread">1</span>
+            </button>
             <button class="nav-item" data-tab="clients">
               <span class="nav-icon">👥</span>
               <span>База клієнтів</span>
@@ -174,6 +179,27 @@
 
             <!-- Slots list -->
             <div class="slots-list" id="specialistSlotsList"></div>
+          </div>
+
+          <!-- TAB 1.5: MINI MESSENGER -->
+          <div class="tab-panel" id="tab-chat">
+            <div class="page-head">
+              <div>
+                <h1>Міні-месенджер із клієнтами</h1>
+                <p class="subtitle">Усі організаційні повідомлення й запити на форс-мажор в одному місці — без хаосу в особистому Telegram</p>
+              </div>
+            </div>
+
+            <div class="chat-split">
+              <div class="card chat-threads-panel">
+                <div class="detail-section-title" style="margin-bottom:10px;">Діалоги</div>
+                <div class="client-items" id="specChatThreads"></div>
+              </div>
+
+              <div class="card chat-window-panel" id="specChatWindow">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
           </div>
 
           <!-- TAB 2: CLIENTS DATABASE -->
@@ -373,6 +399,7 @@
         <div class="client-tabs">
           <button class="ctab active" data-ctab="book">📅 Записатися на сесію</button>
           <button class="ctab" data-ctab="mybookings">🔄 Мої записи / Перенесення</button>
+          <button class="ctab" data-ctab="cchat">💬 Чат із психологом</button>
           <button class="ctab" data-ctab="checkin">📝 Чек-ін між сесіями</button>
         </div>
 
@@ -442,6 +469,34 @@
               </div>
             </div>
             <div class="my-bookings-list" id="clientMyBookingsList"></div>
+          </div>
+        </div>
+
+        <!-- CLIENT TAB 2.5: MINI MESSENGER -->
+        <div class="ctab-panel" id="ctab-cchat">
+          <div class="card client-chat-card">
+            <div class="client-chat-top">
+              <div>
+                <h2 style="font-size:18px;">💬 Чат із психологом</h2>
+                <p class="muted">Швидкий зв’язок щодо сесій або форс-мажору</p>
+              </div>
+              <label class="field" style="max-width:220px;margin:0;">
+                <span>Ваш профіль (демо)</span>
+                <select id="clientChatSelect"></select>
+              </label>
+            </div>
+
+            <div class="chat-messages" id="clientChatMessages"></div>
+
+            <div class="quick-replies">
+              <button type="button" class="chip" id="btnQuickForceMajeure">🕊️ Повідомити про форс-мажор</button>
+              <button type="button" class="chip" id="btnQuickLate">⏱️ Запізнююсь на 5 хв</button>
+            </div>
+
+            <form class="chat-input-form" id="clientChatForm">
+              <input type="text" id="clientChatInput" placeholder="Напишіть повідомлення психологу..." required />
+              <button type="submit" class="btn btn-primary">Надіслати</button>
+            </form>
           </div>
         </div>
 
